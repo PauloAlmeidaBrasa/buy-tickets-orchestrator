@@ -1,0 +1,42 @@
+services:
+  db:
+    image: mysql:8.4
+    restart: unless-stopped
+    env_file:
+      - ../buy-tickets/.env
+    ports:
+      - "3306:3306"
+    volumes:
+      - db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - buy-tickets-network
+
+  buy-tickets-front:
+    image: ${BUY_TICKETS_FRONT_IMAGE:-buy-tickets-front}:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    networks:
+      - buy-tickets-network
+
+  buy-ticket-api:
+    image: ${BUY_TICKETS_API_IMAGE:-buy-ticket-api}:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    networks:
+      - buy-tickets-network
+
+  ticket-consumer:
+    image: ${TICKET_CONSUMER_IMAGE:-ticket-consumer}:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    networks:
+      - buy-tickets-network
+
+networks:
+  buy-tickets-network:
+    driver: bridge
+
+volumes:
+  db-data:

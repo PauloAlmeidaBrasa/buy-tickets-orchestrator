@@ -1,0 +1,37 @@
+services:
+  buy-tickets-front:
+    build:
+      context: ./buy-tickets/
+      dockerfile: Dockerfile
+    environment:
+      NODE_ENV: production
+    command: npm run start
+
+  buy-ticket-api:
+    build:
+      context: ../buy-tickets
+      dockerfile: Dockerfile
+    env_file:
+      - ../buy-tickets/.env
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DB_HOST: db
+      DB_PORT: "3306"
+
+  ticket-consumer:
+    build:
+      context: ./ticket-consumer-service
+      dockerfile: Dockerfile
+    env_file:
+      - ../buy-tickets/.env
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      DB_HOST: db
+      DB_PORT: "3306"
+    command: npm run start
