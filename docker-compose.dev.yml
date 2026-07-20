@@ -1,37 +1,48 @@
 services:
   buy-tickets-front:
     build:
-      context: ./buy-tickets/
-      dockerfile: Dockerfile
+      context: ../buy-tickets-front
+      dockerfile: Dockerfile.dev
     environment:
-      NODE_ENV: hml
-    command: npm run start
+      NODE_ENV: development
+    command: npm run dev -- --host 0.0.0.0 --port 5173
+    ports:
+      - "5173:5173"
+    volumes:
+      - ../buy-tickets-front:/app
+      - /app/node_modules
 
   buy-ticket-api:
     build:
       context: ../buy-tickets
       dockerfile: Dockerfile.dev
+      target: dev
     env_file:
       - ../buy-tickets/.env
     depends_on:
       db:
         condition: service_healthy
     environment:
-      SPRING_PROFILES_ACTIVE: hml
-      DB_HOST: db
-      DB_PORT: "3306"
+      SPRING_PROFILES_ACTIVE: dev
+    volumes:
+      - ../buy-tickets:/app
+      - /root/.m2:/root/.m2
 
   ticket-consumer:
     build:
-      context: ./ticket-consumer-service
-      dockerfile: Dockerfile
+      context: ../ticket-consumer-service
+      dockerfile: Dockerfile.dev
     env_file:
-      - ../buy-tickets/.env
+      - ../ticket-consumer-service/.env
     depends_on:
       db:
         condition: service_healthy
     environment:
-      NODE_ENV: hml
-      DB_HOST: db
-      DB_PORT: "3306"
-    command: npm run start
+      SPRING_PROFILES_ACTIVE: dev
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/buy_tickets
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: com.mysql.cj.jdbc.Driver
+      SPRING_DATASOURCE_USERNAME: buy_tickets
+      SPRING_DATASOURCE_PASSWORD: buy_tickets_pwd
+    volumes:
+      - ../ticket-consumer-service:/app
+      - /root/.m2:/root/.m2
