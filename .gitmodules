@@ -1,0 +1,9 @@
+[submodule "buy-ticket-api"]
+	path = buy-ticket-api
+	url = https://github.com/PauloAlmeidaBrasa/buy-tickets.git
+[submodule "buy-ticket-front"]
+	path = buy-ticket-front
+	url = https://github.com/PauloAlmeidaBrasa/buy-ticket-front.git
+[submodule "buy-ticket-consumer"]
+	path = buy-ticket-consumer
+	url = https://github.com/PauloAlmeidaBrasa/ticket-consumer-service.git
