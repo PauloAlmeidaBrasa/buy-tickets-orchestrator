@@ -1,7 +1,7 @@
 services:
   buy-tickets-front:
     build:
-      context: ../buy-ticket-front
+      context: ./buy-ticket-front
       dockerfile: Dockerfile.dev
     environment:
       NODE_ENV: development
@@ -9,34 +9,41 @@ services:
     ports:
       - "5173:5173"
     volumes:
-      - ../buy-ticket-front:/app
+      - ./buy-ticket-front:/app
+      - buy-ticket-front-node-modules:/app/node_modules
 
   buy-ticket-api:
     build:
-      context: ../buy-tickets
+      context: ./buy-ticket-api
       dockerfile: Dockerfile.dev
       target: dev
     env_file:
-      - ../buy-tickets/.env
+      - ./buy-ticket-api/.env
     depends_on:
       db:
         condition: service_healthy
     environment:
       SPRING_PROFILES_ACTIVE: dev
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/127.0.0.1/8082'"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
     ports:
       - "8082:8082"
     volumes:
-      - ../buy-tickets:/app
+      - ./buy-ticket-api:/app
       - /root/.m2:/root/.m2
 
   ticket-consumer:
     build:
-      context: ../ticket-consumer-service
+      context: ./buy-ticket-consumer
       dockerfile: Dockerfile.dev
-    env_file:
-      - ../ticket-consumer-service/.env
     depends_on:
       db:
+        condition: service_healthy
+      buy-ticket-api:
         condition: service_healthy
     environment:
       SPRING_PROFILES_ACTIVE: dev
@@ -45,5 +52,8 @@ services:
       SPRING_DATASOURCE_USERNAME: buy_tickets
       SPRING_DATASOURCE_PASSWORD: buy_tickets_pwd
     volumes:
-      - ../ticket-consumer-service:/app
+      - ./buy-ticket-consumer:/app
       - /root/.m2:/root/.m2
+
+volumes:
+  buy-ticket-front-node-modules:

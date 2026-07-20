@@ -3,7 +3,7 @@ services:
     image: mysql:8.4
     restart: unless-stopped
     env_file:
-      - ../buy-tickets/.env
+      - ./buy-ticket-api/.env
     ports:
       - "3306:3306"
     volumes:
